@@ -1,0 +1,33 @@
+# Nome do workflow que aparecerá na aba "Actions" do GitHub
+name: CI - Build & Test
+
+# Define os gatilhos (eventos) que iniciam este workflow
+on:
+  # Roda quando um Pull Request é aberto, sincronizado ou reaberto para o branch main
+  pull_request:
+    branches: ["main"]
+
+# Agrupa todos os jobs que serão executados
+jobs:
+  # Define um job chamado "build-and-test"
+  build-and-test:
+    # Especifica que o job deve rodar em uma máquina virtual Ubuntu recente
+    runs-on: ubuntu-latest
+
+    # Define a sequência de passos que o job executará
+    steps:
+      # 1. Passo para baixar o código do repositório para a máquina virtual
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # 2. Passo de "Build" (simulado)
+      - name: Build
+        run: echo "Simulando o passo de build..."
+
+      # 3. Passo de "Test" (simulado)
+      # Aqui, verificamos se os arquivos essenciais existem, um teste simples.
+      - name: Run Tests
+        run: |
+          echo "Simulando execução de testes..."
+          test -f index.html && echo "index.html encontrado."
+          test -f staging/index.html && echo "staging/index.html encontrado."

@@ -1,0 +1,59 @@
+name: Staging - Deploy to GitHub Pages
+
+on:
+  # Gatilho: Roda em todo push para o branch gh-pages
+  push:
+    branches: ["gh-pages"]
+
+  # Permite que este workflow seja acionado manualmente pela UI do GitHub também
+  workflow_dispatch:
+
+# Define as permissões necessárias para o workflow interagir com o GitHub Pages
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Define as configurações de concorrência para evitar deploys simultâneos
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
+jobs:
+  # Job de teste rápido, específico para staging
+  test-staging:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Test Staging Content [TEST-STAGING]
+        run: |
+          echo "Verificando o conteúdo de staging..."
+          # Um teste simples para garantir que o arquivo de staging existe
+          test -f staging/index.html
+
+  # Job principal de deploy
+  deploy:
+    # Depende do sucesso do job 'test-staging'
+    needs: test-staging
+    environment:
+      name: github-pages
+      # A URL será a de staging: /<repo>/staging/
+      url: ${{ steps.deployment.outputs.page_url }}/staging/
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Esta ação cria um artefato (um arquivo .tar) com o conteúdo do site
+      # que será usado pelo GitHub Pages para o deploy.
+      - name: Setup Pages
+        uses: actions/upload-pages-artifact@v3
+        with:
+          # Informa que o conteúdo de todo o diretório deve ser publicado
+          path: "."
+
+      # Esta ação pega o artefato criado no passo anterior e faz o deploy
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
